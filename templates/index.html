@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Monday BI Agent</title>
+    <title>Monday Business Intelligence Agent</title>
+
+    <!-- Markdown Renderer -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: #f5f7fa;
+            background: #f5f7fb;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -14,17 +17,18 @@
         }
 
         .chat-container {
-            width: 450px;
+            width: 420px;
+            height: 550px;
             background: white;
             border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             display: flex;
             flex-direction: column;
             overflow: hidden;
         }
 
         .chat-header {
-            background: #0073ea;
+            background: linear-gradient(to right, #2d6cdf, #4b8df8);
             color: white;
             padding: 15px;
             font-size: 18px;
@@ -33,54 +37,76 @@
         }
 
         .chat-box {
-            height: 400px;
+            flex: 1;
             padding: 15px;
             overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
         }
 
-        .user-message {
-            align-self: flex-end;
-            background: #0073ea;
+        .message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 85%;
+            word-wrap: break-word;
+        }
+
+        .user {
+            background: #2d6cdf;
             color: white;
-            padding: 10px;
-            border-radius: 10px;
-            max-width: 70%;
+            margin-left: auto;
         }
 
-        .bot-message {
-            align-self: flex-start;
-            background: #e9ecef;
-            padding: 10px;
-            border-radius: 10px;
-            max-width: 70%;
+        .bot {
+            background: #f0f0f0;
         }
 
-        .chat-input {
+        .input-box {
             display: flex;
+            padding: 10px;
             border-top: 1px solid #ddd;
         }
 
         input {
             flex: 1;
-            padding: 12px;
-            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
             outline: none;
         }
 
         button {
-            background: #0073ea;
-            color: white;
+            margin-left: 10px;
+            padding: 10px 15px;
             border: none;
-            padding: 12px 20px;
+            background: #2d6cdf;
+            color: white;
+            border-radius: 6px;
             cursor: pointer;
         }
 
         button:hover {
-            background: #005ecb;
+            background: #1e4fb3;
         }
+
+        /* Markdown table styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+            font-size: 13px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 6px;
+            text-align: left;
+        }
+
+        th {
+            background: #2d6cdf;
+            color: white;
+        }
+
     </style>
 </head>
 
@@ -94,7 +120,7 @@
 
     <div class="chat-box" id="chatBox"></div>
 
-    <div class="chat-input">
+    <div class="input-box">
         <input id="question" placeholder="Ask business question..." />
         <button onclick="sendMessage()">Send</button>
     </div>
@@ -105,42 +131,42 @@
 
 async function sendMessage() {
 
-    const input = document.getElementById("question");
-    const chatBox = document.getElementById("chatBox");
+    let input = document.getElementById("question");
+    let chatBox = document.getElementById("chatBox");
+    let question = input.value.trim();
 
-    const question = input.value;
     if (!question) return;
 
-    // Show user message
-    const userMsg = document.createElement("div");
-    userMsg.className = "user-message";
-    userMsg.innerText = question;
+    // User message
+    let userMsg = document.createElement("div");
+    userMsg.className = "message user";
+    userMsg.textContent = question;
     chatBox.appendChild(userMsg);
 
     input.value = "";
 
-    // Send to backend
-    const response = await fetch("/ask", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question })
-    });
-
-    const data = await response.json();
-
-    // Show bot message
-    const botMsg = document.createElement("div");
-    botMsg.className = "bot-message";
-    botMsg.innerText = data.answer;
+    // Bot loading message
+    let botMsg = document.createElement("div");
+    botMsg.className = "message bot";
+    botMsg.textContent = "Typing...";
     chatBox.appendChild(botMsg);
 
     chatBox.scrollTop = chatBox.scrollHeight;
-}
 
-// Enter key support
-document.getElementById("question").addEventListener("keypress", function(e){
-    if (e.key === "Enter") sendMessage();
-});
+    // API Call
+    let response = await fetch("/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: question })
+    });
+
+    let data = await response.json();
+
+    // Render markdown response
+    botMsg.innerHTML = marked.parse(data.answer);
+
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
 
 </script>
 
