@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Monday BI Agent</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .chat-container {
+            width: 450px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: #0073ea;
+            color: white;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .chat-box {
+            height: 400px;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background: #0073ea;
+            color: white;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 70%;
+        }
+
+        .bot-message {
+            align-self: flex-start;
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 70%;
+        }
+
+        .chat-input {
+            display: flex;
+            border-top: 1px solid #ddd;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            outline: none;
+        }
+
+        button {
+            background: #0073ea;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #005ecb;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="chat-container">
+
+    <div class="chat-header">
+        Monday Business Intelligence Agent
+    </div>
+
+    <div class="chat-box" id="chatBox"></div>
+
+    <div class="chat-input">
+        <input id="question" placeholder="Ask business question..." />
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+</div>
+
+<script>
+
+async function sendMessage() {
+
+    const input = document.getElementById("question");
+    const chatBox = document.getElementById("chatBox");
+
+    const question = input.value;
+    if (!question) return;
+
+    // Show user message
+    const userMsg = document.createElement("div");
+    userMsg.className = "user-message";
+    userMsg.innerText = question;
+    chatBox.appendChild(userMsg);
+
+    input.value = "";
+
+    // Send to backend
+    const response = await fetch("/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question })
+    });
+
+    const data = await response.json();
+
+    // Show bot message
+    const botMsg = document.createElement("div");
+    botMsg.className = "bot-message";
+    botMsg.innerText = data.answer;
+    chatBox.appendChild(botMsg);
+
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+// Enter key support
+document.getElementById("question").addEventListener("keypress", function(e){
+    if (e.key === "Enter") sendMessage();
+});
+
+</script>
+
+</body>
+</html>
