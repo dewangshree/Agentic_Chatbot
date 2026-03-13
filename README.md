@@ -341,7 +341,7 @@ Errors handled:
 
 ## 👨‍💻 Author
 
-**Shreyas Dewang Swami**
+**Shreyas Vikrant DewangSwami**
 
 ---
 
